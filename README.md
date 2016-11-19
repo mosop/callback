@@ -57,7 +57,7 @@ around
 after
 ```
 
-For more details, see [Wiki](https://github.com/mosop/callback/wiki)
+For more detail, see [Wiki](https://github.com/mosop/callback/wiki)
 
 ## Contributing
 
