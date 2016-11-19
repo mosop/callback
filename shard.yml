@@ -1,0 +1,12 @@
+name: callback
+version: 0.1.0
+
+authors:
+  - mosop
+
+license: MIT
+
+development_dependencies:
+  stdio:
+    github: mosop/stdio
+    version: ~> 0.1.3
