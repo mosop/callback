@@ -42,7 +42,7 @@ class Record
   end
 
   def save
-    run_callbacks_for_save do
+    run_callbacks :save do
       puts "yield"
     end
   end
