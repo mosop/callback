@@ -64,6 +64,8 @@ after
 
 For more detail, see [Wiki](https://github.com/mosop/callback/wiki)
 
+## Release Notes
+
 ## Contributing
 
 1. Fork it ( https://github.com/mosop/callback/fork )
