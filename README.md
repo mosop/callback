@@ -1,6 +1,6 @@
 # Crystal Callback
 
-A Crystal library for defining callbacks.
+A Crystal library for defining and invoking callbacks.
 
 [![Build Status](https://travis-ci.org/mosop/callback.svg?branch=master)](https://travis-ci.org/mosop/callback)
 
