@@ -3,3 +3,4 @@
 Dir.glob("spec/**/*_spec.cr").each do |f|
   exit 1 unless system("crystal spec #{f}")
 end
+exit 1 unless system("crystal spec")
