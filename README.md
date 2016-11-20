@@ -25,20 +25,24 @@ class Record
   callback!
   define_callback_group :save
 
-  before :save do
+  before_save do
     puts "before"
   end
 
-  around :save do
+  around_save do
     puts "around"
   end
 
-  after :save do
+  after_save do
     puts "after"
   end
 
+  on_save do
+    puts "on"
+  end
+
   def save
-    run_callbacks :save do
+    run_callbacks_for_save do
       puts "yield"
     end
   end
@@ -52,6 +56,7 @@ This prints:
 ```
 before
 around
+on
 yield
 around
 after

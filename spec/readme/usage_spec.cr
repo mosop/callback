@@ -7,16 +7,20 @@ module CallbackReadmeUsage
     callback!
     define_callback_group :save
 
-    before :save do
+    before_save do
       puts "before"
     end
 
-    around :save do
+    around_save do
       puts "around"
     end
 
-    after :save do
+    after_save do
       puts "after"
+    end
+
+    on_save do
+      puts "on"
     end
 
     def save
@@ -33,6 +37,7 @@ module CallbackReadmeUsage
       io.out.gets_to_end.should eq <<-EOS
       before
       around
+      on
       yield
       around
       after\n
