@@ -82,7 +82,7 @@ module Callback
 
               class ResultSet
                 getter values = [] of ::\{{result_type}}
-                getter named = {} of String => ::\{{result_type}}
+                getter named = {} of ::String => ::\{{result_type}}
 
                 def [](name)
                   named[name.to_s]
