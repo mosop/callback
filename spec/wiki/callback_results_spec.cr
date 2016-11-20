@@ -22,7 +22,7 @@ module CallbackCallbackResultsWikiFeature
     end
 
     def validate
-      run_callbacks :validate do |results|
+      run_callbacks_for_validate do |results|
         results.values.all? ? ":)" : ":P"
       end
     end

@@ -18,7 +18,7 @@ module CallbackNamingCallbacksWikiFeature
 
   it name do
     Stdio.capture do |io|
-      Record.callbacks_for(:validate)[:smiley].call(Record.new)
+      Record.callbacks_for_validate[:smiley].call(Record.new)
       io.out.gets_to_end.should eq ":)\n"
     end
   end

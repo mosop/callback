@@ -17,7 +17,7 @@ module CallbackRunningCallbacksWikiFeature
       end
 
       def save
-        run_callbacks :save do
+        run_callbacks_for_save do
           puts "save"
         end
       end
