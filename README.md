@@ -19,10 +19,8 @@ dependencies:
 ```crystal
 require "callback"
 
-Callback.enable Reference
-
 class Record
-  Callback.callback!
+  Callback.enable
   define_callback_group :save
 
   before_save do
@@ -67,7 +65,7 @@ For more detail, see [Wiki](https://github.com/mosop/callback/wiki)
 ## Release Notes
 
 * v0.4.0
-  * Callback.enable no longer receives a class argument. Use Callback.enable inside a class instead.
+  * (Breaking Change) Callback.enable no longer receives a class argument. Use Callback.enable inside a class instead.
 
 ## Contributing
 
