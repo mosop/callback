@@ -1,10 +1,8 @@
 require "../spec_helper"
 
 module CallbackReadmeUsage
-  Callback.enable Reference
-
   class Record
-    callback!
+    Callback.enable
     define_callback_group :save
 
     before_save do

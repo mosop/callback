@@ -1,10 +1,8 @@
 require "../spec_helper"
 
 module CallbackCallbackResultsWikiFeature
-  Callback.enable Reference
-
   class Record
-    callback!
+    Callback.enable
     define_callback_group :validate, proc_type: Proc(Bool)
 
     getter name : String

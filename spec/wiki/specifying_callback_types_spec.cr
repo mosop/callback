@@ -1,10 +1,8 @@
 require "../spec_helper"
 
 module CallbackSpecifyingWikiFeature
-  Callback.enable Reference
-
   class AgeOfMajority
-    callback!
+    Callback.enable
     define_callback_group :check, proc_type: Proc(Int32, String)
 
     on_check :smiley do |o, i|

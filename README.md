@@ -22,7 +22,7 @@ require "callback"
 Callback.enable Reference
 
 class Record
-  callback!
+  Callback.callback!
   define_callback_group :save
 
   before_save do
@@ -65,6 +65,9 @@ after
 For more detail, see [Wiki](https://github.com/mosop/callback/wiki)
 
 ## Release Notes
+
+* v0.4.0
+  * Callback.enable no longer receives a class argument. Use Callback.enable inside a class instead.
 
 ## Contributing
 

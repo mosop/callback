@@ -1,10 +1,8 @@
 require "../spec_helper"
 
 module CallbackNamingCallbacksWikiFeature
-  Callback.enable Reference
-
   class Record
-    callback!
+    Callback.enable
     define_callback_group :validate
 
     after_validate :smiley do |rec|

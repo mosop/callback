@@ -1,10 +1,8 @@
 require "../spec_helper"
 
 module CallbackInheritingCallbacksWikiFeature
-  Callback.enable Reference
-
   class Super
-    callback!
+    Callback.enable
     define_callback_group :super
 
     before_super do

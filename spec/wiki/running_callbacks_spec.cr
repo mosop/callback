@@ -1,11 +1,9 @@
 require "../spec_helper"
 
 module CallbackRunningCallbacksWikiFeature
-  Callback.enable Reference
-
   module AccessingAnInstanceInCallbacks
     class Record
-      callback!
+      Callback.enable
       define_callback_group :save
 
       before_save do |o|
