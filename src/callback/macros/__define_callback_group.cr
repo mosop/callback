@@ -305,7 +305,7 @@ module Callback
         {%
           phase = phase.id
           phase_method = "#{phase}_#{prefix}#{name}".id
-          append_method = "append_#{prefix}callback_for_#{phase}".id
+          append_method = "append_#{prefix}callback_for_#{phase}_#{name}".id
         %}
 
         def {{append_method}}(proc : ::{{proc_alias}}, name)
