@@ -10,6 +10,7 @@ module Callback
       %}
     {% end %}
 
+    # :nodoc:
     macro {{prefix}}_enable_callback
       macro inherited
         ::Callback.__initialize_class {{namespace}}, ::\\{{@type}}, ::\\{{@type.superclass}}

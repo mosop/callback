@@ -1,8 +1,11 @@
 module Callback
-  macro __define_callback_group(name_node, proc_type, inherit, pascal_node, prefix_node, suffix_node, type_node, supertype_node, custom_groups = ::Callback::Groups::Custom, auto_groups = ::Callback::Groups::Auto)
+  macro __define_callback_group(name_node, proc_type, inherit, pascal_node, upcase_node, prefix_node, suffix_node, type_node, supertype_node, custom_groups = ::Callback::Groups::Custom, auto_groups = ::Callback::Groups::Auto)
     {%
       name = name_node.id
+      pascal_name = name_node.id.camelcase.id
+      upcase_name = name_node.id.upcase.id
       pascal = pascal_node.id
+      upcase = upcase_node.id
       prefix = prefix_node.id
       suffix = suffix_node.id
       type_node = type_node.resolve if type_node.class_name == "Path"
@@ -11,16 +14,24 @@ module Callback
       supertype_node = supertype_node.name.resolve if supertype_node.class_name == "Generic"
       custom_groups = custom_groups.resolve
       auto_groups = auto_groups.resolve
-      internal = "Internal_".id
       type = type_node.id
       mod_id = type.split("(")[0].split("::").join("_").id
       group_class_l = "#{mod_id}__#{name}".id
       group_class = inherit ? "Callback::Groups::Auto::#{group_class_l}".id : "Callback::Groups::Custom::#{group_class_l}".id
-      phase_class = "#{group_class}::#{internal}::Phase".id
-      proc_class = "#{group_class}::#{internal}::Proc".id
-      proc_set_class = "#{group_class}::#{internal}::ProcSet".id
-      result_set_class = "#{group_class}::#{internal}::ResultSet".id
-      proc_alias = "#{group_class}::Types_::Proc_".id
+      phase_class = "#{group_class}::Phase".id
+      proc_class = "#{group_class}::Proc".id
+      proc_set_class = "#{group_class}::ProcSet".id
+      result_set_class = "#{group_class}::ResultSet".id
+      custom_alias_prefix = "#{pascal}CallbackCustom".id
+      auto_alias_prefix = "#{pascal}CallbackAuto".id
+      alias_prefix = inherit ? auto_alias_prefix : custom_alias_prefix
+      alias_suffix = "For#{pascal_name}".id
+      proc_alias = "#{type}::#{alias_prefix}ProcType#{alias_suffix}".id
+      proc_result_alias = "#{type}::#{alias_prefix}ProcResultType#{alias_suffix}".id
+      custom_const_prefix = "#{prefix.upcase.id}CALLBACK_CUSTOM_".id
+      auto_const_prefix = "#{prefix.upcase.id}CALLBACK_AUTO_".id
+      const_prefix = inherit ? auto_const_prefix : custom_const_prefix
+      const_suffix = "_FOR_#{upcase_name}".id
       group_instance_mod = "Callback::Groups::Instance::#{group_class_l}".id
       group_class_mod = "Callback::Groups::Class::#{group_class_l}".id
     %}
@@ -31,7 +42,8 @@ module Callback
         supergroup_defined = false
         supergroup_class = nil
         superproc_class = nil
-        superproc_id = nil
+        supercount_of_proc_args = nil
+        superis_nil = nil
       %}
     {% else %}
       {%
@@ -43,119 +55,128 @@ module Callback
         {%
           supergroup_defined = true
           supergroup_class = "Callback::Groups::Custom::#{supergroup_class_l}".id
-          superproc_class = "#{supergroup_class}::#{internal}::Proc".id
-          superproc_id = "#{supergroup_class}::Types_::PROC_ID_".id
+          superproc_class = "#{supergroup_class}::Proc".id
+          supercount_of_proc_args = "#{supertype}::#{custom_const_prefix}COUNT_OF_PROC_ARGUMENTS#{const_suffix}".id
+          superis_nil = "#{supertype}::#{custom_const_prefix}PROC_RESULT_TYPE_IS_NIL#{const_suffix}".id
         %}
       {% elsif auto_groups.constants.includes?(supergroup_class_l) %}
         {%
           supergroup_defined = true
           supergroup_class = "Callback::Groups::Auto::#{supergroup_class_l}".id
-          superproc_class = "#{supergroup_class}::#{internal}::Proc".id
-          superproc_id = "#{supergroup_class}::Types_::PROC_ID_".id
+          supercount_of_proc_args = "#{supertype}::#{auto_const_prefix}COUNT_OF_PROC_ARGUMENTS#{const_suffix}".id
+          superis_nil = "#{supertype}::#{auto_const_prefix}PROC_RESULT_TYPE_IS_NIL#{const_suffix}".id
         %}
       {% else %}
         {%
           supergroup_defined = false
           supergroup_class = "Callback::Group".id
           superproc_class = "Callback::Proc".id
-          superproc_id = nil
+          supercount_of_proc_args = nil
+          superis_nil = nil
         %}
       {% end %}
     {% end %}
 
     class ::{{group_class}} < ::Callback::Group
-      module Types_
-        ::Callback.__embed_type_info({{proc_type}}, {{type_node}}, {{superproc_id}}, {{inherit}}, <<-EOS
-          alias Proc_ = $(PROC_TYPE)
-          EOS
-        )
-        ::Callback.__embed_type_info({{proc_type}}, {{type_node}}, {{superproc_id}}, {{inherit}}, <<-EOS
-          PROC_ID_ = "$(PROC_TYPE)"
+    end
+
+
+    class ::{{type}}
+      ::Callback.__embed_type_info({{proc_type}}, {{type_node}}, {{supergroup_class}}, {{supercount_of_proc_args}}, {{superis_nil}}, {{inherit}}, alias_prefix: {{alias_prefix}}, alias_suffix: {{alias_suffix}}, template: <<-EOS
+        alias {{alias_prefix}}ProcType{{alias_suffix}} = $(PROC_TYPE)
+        ::Callback.__define_proc_argument_alias {{alias_prefix}}, {{alias_suffix}}, {{inherit}}, $(TYPES)
+        alias {{alias_prefix}}ProcResultType{{alias_suffix}} = $(RESULT_TYPE)
+        {{const_prefix}}COUNT_OF_PROC_ARGUMENTS{{const_suffix}} = $(COUNT_OF_ARGS)
+        {{const_prefix}}PROC_RESULT_TYPE_IS_NIL{{const_suffix}} = $(IS_NIL)
+        class ::{{group_class}}
+          alias ProcType = ::{{type}}::{{alias_prefix}}ProcType{{alias_suffix}}
+          ::Callback.__define_proc_argument_alias_alias ::{{type}}::{{alias_prefix}}, {{alias_suffix}}, $(ARGS)
+          alias ProcResultType = ::{{type}}::{{alias_prefix}}ProcResultType{{alias_suffix}}
+          COUNT_OF_PROC_ARGUMENTS = ::{{type}}::{{const_prefix}}COUNT_OF_PROC_ARGUMENTS{{const_suffix}}
+          PROC_RESULT_TYPE_IS_NIL = ::{{type}}::{{const_prefix}}PROC_RESULT_TYPE_IS_NIL{{const_suffix}}
+        end
+        EOS
+      )
+    end
+
+
+    class ::{{group_class}}
+      class Proc
+        @proc : ::{{proc_alias}}
+
+        def initialize(@proc, name)
+          @name = name.to_s if name
+        end
+
+        def proc
+          @proc.as(::{{proc_alias}})
+        end
+
+        @name : ::String?
+        def name?
+          @name
+        end
+
+        def name
+          @name.as(::String)
+        end
+
+        ::Callback.__embed_type_info({{proc_type}}, {{type_node}}, {{supergroup_class}}, {{supercount_of_proc_args}}, {{superis_nil}}, {{inherit}}, alias_prefix: {{alias_prefix}}, alias_suffix: {{alias_suffix}}, template: <<-EOS
+          def call($(ARGS))
+            @proc.call $(ARGS)
+          end
           EOS
         )
       end
 
-      module {{internal}}
-        class Proc
-          @proc : ::{{proc_alias}}
+      class ResultSet < ::Callback::ResultSet
+        getter values = [] of ::{{proc_result_alias}}
+        getter named = {} of ::String => ::{{proc_result_alias}}
 
-          def initialize(@proc, name)
-            @name = name.to_s if name
-          end
+        def [](name)
+          named[name.to_s]
+        end
+      end
 
-          def proc
-            @proc.as(::{{proc_alias}})
-          end
+      class ProcSet
+        @group : ::{{group_class}}
 
-          @name : ::String?
-          def name?
-            @name
-          end
-
-          def name
-            @name.as(::String)
-          end
-
-          ::Callback.__embed_type_info({{proc_type}}, {{type_node}}, {{superproc_id}}, {{inherit}}, <<-EOS
-            def call($(ARGS))
-              @proc.call $(ARGS)
-            end
-            EOS
-          )
+        def initialize(@group)
         end
 
-        class ResultSet < ::Callback::ResultSet
-          ::Callback.__embed_type_info({{proc_type}}, {{type_node}}, {{superproc_id}}, {{inherit}}, <<-EOS
-            getter values = [] of $(RESULT_TYPE)
-            getter named = {} of ::String => $(RESULT_TYPE)
-            EOS
-          )
+        getter named = {} of ::String => ::{{proc_class}}
 
-          def [](name)
-            named[name.to_s]
-          end
+        def [](name)
+          name = name.to_s
+          find_named(name) unless named[name]?
+          named[name]
         end
 
-        class ProcSet
-          @group : ::{{group_class}}
-
-          def initialize(@group)
-          end
-
-          getter named = {} of ::String => ::{{proc_class}}
-
-          def [](name)
-            name = name.to_s
-            find_named(name) unless named[name]?
-            named[name]
-          end
-
-          def []?(name)
-            name = name.to_s
-            find_named(name) unless named[name]?
-            named[name]?
-          end
-
-          def find_named(name)
-            if proc = @group.find_named_proc(name)
-              named[name] = proc
-            end
-          end
+        def []?(name)
+          name = name.to_s
+          find_named(name) unless named[name]?
+          named[name]?
         end
 
-        class Phase
-          @procs = [] of ::{{proc_class}}
-
-          def <<(proc : ::{{proc_class}})
-            @procs << proc
+        def find_named(name)
+          if proc = @group.find_named_proc(name)
+            named[name] = proc
           end
+        end
+      end
 
-          def run(results, *args)
-            @procs.each do |proc|
-              result = proc.call(*args)
-              results.values << result
-              results.named[proc.name] = result if proc.name?
-            end
+      class Phase
+        @procs = [] of ::{{proc_class}}
+
+        def <<(proc : ::{{proc_class}})
+          @procs << proc
+        end
+
+        def run(results, *args)
+          @procs.each do |proc|
+            result = proc.call(*args)
+            results.values << result
+            results.named[proc.name] = result if proc.name?
           end
         end
       end
@@ -320,9 +341,9 @@ module Callback
           {{append_method}} proc, name
         end
 
-        ::Callback.__embed_type_info({{proc_type}}, {{type_node}}, {{superproc_id}}, {{inherit}}, template: <<-EOS
-          def {{phase_method}}(name = nil, &block : $(TYPES) -> $(ANY_RESULT_TYPE))
-            proc = ->($(ARGS_WITH_TYPES)) {
+        ::Callback.__embed_type_info({{proc_type}}, {{type_node}}, {{supergroup_class}}, {{supercount_of_proc_args}}, {{superis_nil}}, {{inherit}}, alias_prefix: {{alias_prefix}}, alias_suffix: {{alias_suffix}}, template: <<-EOS
+          def {{phase_method}}(name = nil, &block : $(ALIASES) -> $(ANY_RESULT_TYPE))
+            proc = ->($(ARGS_WITH_ALIASES)) {
               block.call $(ARGS)
               $(NIL)
             }

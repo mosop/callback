@@ -1,5 +1,5 @@
 module Callback
-  macro __initialize_base_class(pascal_node, prefix_node, suffix_node, type_node)
+  macro __initialize_base_class(pascal_node, upcase_node, prefix_node, suffix_node, type_node)
     {%
       pascal = pascal_node.id
       prefix = prefix_node.id
@@ -10,6 +10,7 @@ module Callback
     %}
 
     class ::{{type}}
+      # Returns the callback results.
       getter {{prefix}}callback_results = {} of ::String => ::Callback::ResultSet
     end
   end

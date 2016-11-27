@@ -1,5 +1,5 @@
 module Callback
-  macro __initialize_class_default(pascal_node, prefix_node, suffix_node, type_node)
+  macro __initialize_class_default(pascal_node, upcase_node, prefix_node, suffix_node, type_node)
     {%
       pascal = pascal_node.id
       prefix = prefix_node.id

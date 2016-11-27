@@ -3,6 +3,7 @@ module Callback
     {%
       namespace = namespace_node.id
       pascal_node = namespace_node.camelcase
+      upcase_node = namespace_node.upcase
       pascal = pascal_node.id
     %}
     {% if namespace == "".id %}
@@ -22,12 +23,12 @@ module Callback
       supertype_node = supertype_node.resolve if supertype_node.class_name == "Path"
       supertype_node = supertype_node.name.resolve if supertype_node.class_name == "Generic"
     %}
-    ::Callback.__initialize_class_default {{pascal_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}
+    ::Callback.__initialize_class_default {{pascal_node}}, {{upcase_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}
     {% if supertype_node == nil %}
-      ::Callback.__initialize_base_class {{pascal_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}
-      ::Callback.__define_define_callback_group {{pascal_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}, nil
+      ::Callback.__initialize_base_class {{pascal_node}}, {{upcase_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}
+      ::Callback.__define_define_callback_group {{pascal_node}}, {{upcase_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}, nil
     {% else %}
-      ::Callback.__define_define_callback_group {{pascal_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}, {{supertype_node}}
+      ::Callback.__define_define_callback_group {{pascal_node}}, {{upcase_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}, {{supertype_node}}
     {% end %}
   end
 end
