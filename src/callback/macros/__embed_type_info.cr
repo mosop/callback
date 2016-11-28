@@ -24,12 +24,14 @@ module Callback
         _nil = is_nil ? "nil" : ""
         _is_nil = is_nil ? "true" : "false"
         _any_result_type = is_nil ? "_" : _result_type
-        types = %w()
+        types = ["::#{type}".id]
       %}
       {% for e, i in args %}
-        {%
-          types << "::#{supergroup}::ProcArgumentType#{alias_suffix}#{i+1}".id
-        %}
+        {% if i != 0 %}
+          {%
+            types << "::#{supergroup}::ProcArgumentType#{alias_suffix}#{i+1}".id
+          %}
+        {% end %}
       {% end %}
     {% else %}
       {%
@@ -63,15 +65,17 @@ module Callback
       {%
         alias_prefix = alias_prefix.id
         alias_suffix = alias_suffix.id
-        aliases = %w()
-        args_with_aliases = %w()
+        aliases = ["::#{type}".id]
+        args_with_aliases = ["_1 : ::#{type}".id]
       %}
       {% for e, i in args %}
-        {%
-          al = "::#{type}::#{alias_prefix}ProcArgumentType#{alias_suffix}#{i+1}".id
-          aliases << al
-          args_with_aliases << "_#{i+1} : #{al}".id
-        %}
+        {% if i != 0 %}
+          {%
+            al = "::#{type}::#{alias_prefix}ProcArgumentType#{alias_suffix}#{i+1}".id
+            aliases << al
+            args_with_aliases << "_#{i+1} : #{al}".id
+          %}
+        {% end %}
       {% end %}
       {%
         _aliases = aliases.join(", ")
