@@ -34,6 +34,7 @@ module Callback
       const_suffix = "_FOR_#{upcase_name}".id
       group_instance_mod = "Callback::Groups::Instance::#{group_class_l}".id
       group_class_mod = "Callback::Groups::Class::#{group_class_l}".id
+      dynamic_group = "#{prefix}callback_group_for_#{name}".id
     %}
 
     {% if supertype_node == nil %}
@@ -98,7 +99,6 @@ module Callback
         EOS
       )
     end
-
 
     class ::{{group_class}}
       class Proc
@@ -224,6 +224,14 @@ module Callback
         {% end %}
       end
 
+      def static
+        self.class.instance
+      end
+
+      def dynamic?
+        !static.same?(self)
+      end
+
       def append_before(proc : ::{{proc_alias}}, name)
         proc = ::{{proc_class}}.new(proc, name)
         before << proc
@@ -262,6 +270,7 @@ module Callback
         {% if supergroup_defined %}
           supergroup.run_before results, *args
         {% end %}
+        static.before.run results, *args if dynamic?
         before.run results, *args
       end
 
@@ -269,6 +278,7 @@ module Callback
         {% if supergroup_defined %}
           supergroup.run_around results, *args
         {% end %}
+        static.around.run results, *args if dynamic?
         around.run results, *args
       end
 
@@ -276,6 +286,7 @@ module Callback
         {% if supergroup_defined %}
           supergroup.run_after results, *args
         {% end %}
+        static.after.run results, *args if dynamic?
         after.run results, *args
       end
 
@@ -283,6 +294,7 @@ module Callback
         {% if supergroup_defined %}
           supergroup.run_on results, *args
         {% end %}
+        static.on.run results, *args if dynamic?
         on.run results, *args
       end
 
@@ -305,7 +317,7 @@ module Callback
     module ::{{group_instance_mod}}
       def run_{{prefix}}callbacks_for_{{name}}(*args)
         results = renew_{{prefix}}callback_results_for_{{name}}
-        ::{{group_class}}.instance.run results, self, *args do
+        {{dynamic_group}}.as(::{{group_class}}).run results, self, *args do
           yield results
         end
       end
@@ -319,44 +331,62 @@ module Callback
       def {{prefix}}callback_results_for_{{name}}
         (@{{prefix}}callback_results[{{name.stringify}}] ||= ::{{result_set_class}}.new).as(::{{result_set_class}})
       end
-    end
 
-    module ::{{group_class_mod}}
-      {% for phase, i in %w(before around after on) %}
-        {%
-          phase = phase.id
-          phase_method = "#{phase}_#{prefix}#{name}".id
-          append_method = "append_#{prefix}callback_for_#{phase}_#{name}".id
-        %}
-
-        def {{append_method}}(proc : ::{{proc_alias}}, name)
-          ::{{group_class}}.instance.append_{{phase}}(proc, name)
-        end
-
-        def {{phase_method}}(proc : ::{{proc_alias}})
-          {{append_method}} proc, nil
-        end
-
-        def {{phase_method}}(name, proc : ::{{proc_alias}})
-          {{append_method}} proc, name
-        end
-
-        ::Callback.__embed_type_info({{proc_type}}, {{type_node}}, {{supergroup_class}}, {{supercount_of_proc_args}}, {{superis_nil}}, {{inherit}}, alias_prefix: {{alias_prefix}}, alias_suffix: {{alias_suffix}}, template: <<-EOS
-          def {{phase_method}}(name = nil, &block : $(ALIASES) -> $(ANY_RESULT_TYPE))
-            proc = ->($(ARGS_WITH_ALIASES)) {
-              block.call $(ARGS)
-              $(NIL)
-            }
-            {{append_method}} proc, name
-          end
-          EOS
-        )
+      {% unless supergroup_defined %}
+        @{{dynamic_group}} = ::Callback::Util::Var(::Callback::Group).new
       {% end %}
-
-      def {{prefix}}callbacks_for_{{name}}
-        ::{{group_class}}.instance.procs
+      def {{dynamic_group}}
+        @{{dynamic_group}}.var ||= ::{{group_class}}.new
       end
     end
+
+    {% for mod, i in [group_instance_mod, group_class_mod] %}
+      module ::{{mod}}
+        {% for phase, i in %w(before around after on) %}
+          {%
+            phase = phase.id
+            phase_method = "#{phase}_#{prefix}#{name}".id
+            append_method = "append_#{prefix}callback_for_#{phase}_#{name}".id
+          %}
+          {% if mod == group_instance_mod %}
+            {%
+              gc = "#{dynamic_group}.as(::#{group_class})".id
+            %}
+          {% else %}
+            {%
+              gc = "::#{group_class}.instance".id
+            %}
+          {% end %}
+
+          def {{append_method}}(proc : ::{{proc_alias}}, name)
+            {{gc}}.append_{{phase}}(proc, name)
+          end
+
+          def {{phase_method}}(proc : ::{{proc_alias}})
+            {{append_method}} proc, nil
+          end
+
+          def {{phase_method}}(name, proc : ::{{proc_alias}})
+            {{append_method}} proc, name
+          end
+
+          ::Callback.__embed_type_info({{proc_type}}, {{type_node}}, {{supergroup_class}}, {{supercount_of_proc_args}}, {{superis_nil}}, {{inherit}}, alias_prefix: {{alias_prefix}}, alias_suffix: {{alias_suffix}}, template: <<-EOS
+            def {{phase_method}}(name = nil, &block : $(ALIASES) -> $(ANY_RESULT_TYPE))
+              proc = ->($(ARGS_WITH_ALIASES)) {
+                block.call $(ARGS)
+                $(NIL)
+              }
+              {{append_method}} proc, name
+            end
+            EOS
+          )
+        {% end %}
+
+        def {{prefix}}callbacks_for_{{name}}
+          ::{{group_class}}.instance.procs
+        end
+      end
+    {% end %}
 
     class ::{{type}}
       include ::{{group_instance_mod}}
