@@ -64,13 +64,4 @@ For more detail, see [Wiki](https://github.com/mosop/callback/wiki)
 
 ## Release Notes
 
-* v0.4.0
-  * (Breaking Change) Callback.enable no longer receives a class argument. Use Callback.enable inside a class instead.
-
-## Contributing
-
-1. Fork it ( https://github.com/mosop/callback/fork )
-2. Create your feature branch (git checkout -b my-new-feature)
-3. Commit your changes (git commit -am 'Add some feature')
-4. Push to the branch (git push origin my-new-feature)
-5. Create a new Pull Request
+See [Releases](https://github.com/mosop/callback/releases).
