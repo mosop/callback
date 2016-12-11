@@ -21,7 +21,7 @@ module CallbackCallbackResultsWikiFeature
 
     def validate
       run_callbacks_for_validate do |results|
-        results.values.all? ? ":)" : ":P"
+        results.all.all? ? ":)" : ":P"
       end
     end
   end
@@ -30,7 +30,7 @@ module CallbackCallbackResultsWikiFeature
     rec = Record.new(name: "mosop")
     rec.validate.should eq ":P"
     results = rec.callback_results_for_validate
-    results.values.should eq [true, false]
+    results.all.should eq [true, false]
     results[:mosop?].should be_true
   end
 end

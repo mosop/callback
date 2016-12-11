@@ -8,10 +8,5 @@ module Callback
       type = type_node.id
       instance_mod = "#{pascal}CallbackInstance".id
     %}
-
-    class ::{{type}}
-      # Returns the callback results.
-      getter {{prefix}}callback_results = {} of ::String => ::Callback::ResultSet
-    end
   end
 end

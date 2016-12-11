@@ -1,5 +1,5 @@
 module Callback
-  macro __initialize_class(namespace_node, type_node, supertype_node = nil)
+  macro __initialize_class(is_base, namespace_node, type_node)
     {%
       namespace = namespace_node.id
       pascal_node = namespace_node.camelcase
@@ -20,15 +20,13 @@ module Callback
     {%
       type_node = type_node.resolve if type_node.class_name == "Path"
       type_node = type_node.name.resolve if type_node.class_name == "Generic"
-      supertype_node = supertype_node.resolve if supertype_node.class_name == "Path"
-      supertype_node = supertype_node.name.resolve if supertype_node.class_name == "Generic"
     %}
     ::Callback.__initialize_class_default {{pascal_node}}, {{upcase_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}
-    {% if supertype_node == nil %}
+    {% if is_base %}
       ::Callback.__initialize_base_class {{pascal_node}}, {{upcase_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}
-      ::Callback.__define_define_callback_group {{pascal_node}}, {{upcase_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}, nil
+      ::Callback.__define_define_callback_group {{pascal_node}}, {{upcase_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}
     {% else %}
-      ::Callback.__define_define_callback_group {{pascal_node}}, {{upcase_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}, {{supertype_node}}
+      ::Callback.__inherit_groups {{pascal_node}}, {{upcase_node}}, {{prefix_node}}, {{suffix_node}}, {{type_node}}
     {% end %}
   end
 end

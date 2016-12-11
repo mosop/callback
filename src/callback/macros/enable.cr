@@ -13,11 +13,10 @@ module Callback
     # :nodoc:
     macro {{prefix}}_enable_callback
       macro inherited
-        ::Callback.__initialize_class {{namespace}}, ::\\{{@type}}, ::\\{{@type.superclass}}
-        ::Callback.__inherit_groups ::\\{{@type}}, ::\\{{@type.superclass}}
+        ::Callback.__initialize_class false, {{namespace}}, ::\\{{@type}}
       end
 
-      ::Callback.__initialize_class {{namespace}}, ::\{{@type}}
+      ::Callback.__initialize_class true, {{namespace}}, ::\{{@type}}
     end
 
     {{prefix}}_enable_callback
