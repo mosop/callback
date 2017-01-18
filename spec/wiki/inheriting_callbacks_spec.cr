@@ -11,6 +11,7 @@ module CallbackInheritingCallbacksWikiFeature
   end
 
   class Sub < Super
+    inherit_callback_group :super
     before_super do
       puts "super in sub"
     end

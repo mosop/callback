@@ -1,24 +1,29 @@
 module Callback
   macro enable(namespace = "")
-    {% if namespace == "" %}
+    {%
+      nsid = namespace.id
+      pascal_node = namespace.camelcase
+    %}
+    {% if nsid == "".id %}
       {%
-        prefix = "".id
+        prefix_node = ""
+        suffix_node = ""
       %}
     {% else %}
       {%
-        prefix = "#{namespace.id}_".id
+        prefix_node = "#{nsid}_"
+        suffix_node = "_#{nsid}"
       %}
     {% end %}
 
-    # :nodoc:
-    macro {{prefix}}_enable_callback
-      macro inherited
-        ::Callback.__initialize_class false, {{namespace}}, ::\\{{@type}}
-      end
-
-      ::Callback.__initialize_class true, {{namespace}}, ::\{{@type}}
+    # Defines a new callback group.
+    macro define_{{prefix_node.id}}callback_group(name, proc_type = ::Proc(::Nil))
+      ::Callback.__define_callback_group(false, \{{name}}, \{{proc_type}}, {{pascal_node}}, {{prefix_node}}, {{suffix_node}}, ::\{{@type}})
     end
 
-    {{prefix}}_enable_callback
+    # Inherits an existing callback group that is defined in its ancestor class.
+    macro inherit_{{prefix_node.id}}callback_group(name, proc_type = ::Proc(::Nil))
+      ::Callback.__define_callback_group(true, \{{name}}, \{{proc_type}}, {{pascal_node}}, {{prefix_node}}, {{suffix_node}}, ::\{{@type}})
+    end
   end
 end
