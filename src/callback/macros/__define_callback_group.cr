@@ -38,10 +38,15 @@ module Callback
 
     class ::{{type}}
       {% unless inherit %}
-        # Returns the callback results.
+        # Returns callback results.
+        #
+        # This method is automatically defined by the Crystal Callback library.
         getter {{prefix}}callback_results = {} of ::String => ::Callback::ResultSet({{result_type}})
       {% end %}
 
+      # Invokes all callbacks of the {{name}} group.
+      #
+      # This method is automatically defined by the Crystal Callback library.
       def run_{{prefix}}callbacks_for_{{name}}(*args)
         results = renew_{{prefix}}callback_results_for_{{name}}
         {{run_method_prefix}}__before results, self, *args
@@ -60,6 +65,9 @@ module Callback
         rs
       end
 
+      # Returns callback results of the {{name}} group.
+      #
+      # This method is automatically defined by the Crystal Callback library.
       def {{prefix}}callback_results_for_{{name}}
         (@{{prefix}}callback_results[{{name.stringify}}] ||= ::Callback::ResultSet({{result_type}}).new).as(::Callback::ResultSet({{result_type}}))
       end
@@ -73,7 +81,7 @@ module Callback
             callbacks = "#{snake_type_id}__#{prefix}callbacks_for_#{name}__#{phase}".id
             callback_names = "#{snake_type_id}__#{prefix}callback_names_for_#{name}__#{phase}".id
             run_method = "#{run_method_prefix}__#{phase}".id
-            # superrun_method = "#{superrun_method_prefix}__#{phase}".id
+            dynamic = scope == :instance ? " dynamic".id : "".id
           %}
           {% if scope == :instance %}
             {%
@@ -90,28 +98,40 @@ module Callback
           {% end %}
 
           {{callbacks_var}} = ::Array(::Proc({{arg_types.splat}}, {{result_type}})).new
+          # :nodoc:
           def {{_self}}{{callbacks}}
             {{callbacks_var}}
           end
 
           {{callback_names_var}} = {} of ::Pointer(::Void) => ::String
+          # :nodoc:
           def {{_self}}{{callback_names}}
             {{callback_names_var}}
           end
 
+          # :nodoc:
           def {{_self}}{{append_method}}(proc : ::Proc({{arg_types.splat}}, {{result_type}}), name)
             {{callbacks_var}} << proc
             {{callback_names_var}}[proc.pointer] = name.to_s if name
           end
 
+          # Registers a{{dynamic}} callback for the {{name}} group.
+          #
+          # This method is automatically defined by the Crystal Callback library.
           def {{_self}}{{phase_method}}(proc : ::Proc({{arg_types.splat}}, {{result_type}}))
             {{append_method}} proc, nil
           end
 
+          # Registers a{{dynamic}} callback for the {{name}} group.
+          #
+          # This method is automatically defined by the Crystal Callback library.
           def {{_self}}{{phase_method}}(name, proc : ::Proc({{arg_types.splat}}, {{result_type}}))
             {{append_method}} proc, name
           end
 
+          # Registers a{{dynamic}} callback for the {{name}} group.
+          #
+          # This method is automatically defined by the Crystal Callback library.
           def {{_self}}{{phase_method}}(name = nil, &block : {{arg_types.splat}} -> {{is_nil ? "_".id : result_type}})
             proc = ->({{typed_args.splat}}) {
               block.call {{args.splat}}
