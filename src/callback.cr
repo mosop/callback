@@ -1,1 +1,2 @@
+require "./version"
 require "./callback/*"
