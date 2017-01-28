@@ -12,7 +12,7 @@ module Callback
       snake_type_id = type_id.underscore
       run_method_prefix = "run_#{prefix}callbacks_for_#{name}".id
       result_type = proc_type.type_vars.last
-      arg_types = [type_node]
+      arg_types = ["::#{type}".id]
     %}
     {% if proc_type.type_vars.size >= 2 %}
       {% for arg, i in proc_type.type_vars[0..-2] %}
