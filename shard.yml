@@ -1,12 +1,14 @@
 name: callback
-version: 0.6.2
+version: 0.6.3
 
 authors:
   - mosop
 
 license: MIT
 
+crsytal: 0.23.1
+
 development_dependencies:
   stdio:
     github: mosop/stdio
-    version: ~> 0.1.3
+    version: ~> 0.1.4
