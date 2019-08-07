@@ -25,9 +25,9 @@ module Callback
       named.has_key?(name.to_s)
     end
 
-    def each
-      named.each do |k, v|
-        yield k, v
+    def each(&block : T -> _)
+      named.each do |_, v|
+        yield v
       end
     end
   end
