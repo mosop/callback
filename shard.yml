@@ -1,12 +1,12 @@
 name: callback
-version: 0.7.1
+version: 0.8.0
 
 authors:
   - mosop
 
 license: MIT
 
-crsytal: 0.30.0
+crystal: ">= 0.26.0, < 1.1.0"
 
 development_dependencies:
   stdio:
