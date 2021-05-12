@@ -1,3 +1,3 @@
 module Callback
-  VERSION="23.3"
+  VERSION = "0.7.1"
 end
